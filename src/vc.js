@@ -1,6 +1,13 @@
 /**
 * Hand Object
 *
+* Will control all actions associated with
+* a players hand such as: sort, get_card,
+* add_card, etc ...
+*
+* Example:
+* > var cards = [Card('queen-hearts'), Card('jack-clubs')];
+* > var hand = Hand(cards);
 */
 var Hand = Class.$extend({
   __init__ : function(cards) {
@@ -14,7 +21,13 @@ var Hand = Class.$extend({
     this.sort();  
   },
 
-  /* Insertion sort the players hand for them */
+  /** 
+   * Sorts the cards in the deck using an
+   * insertion sort by card value
+   *
+   * example:
+   *  > hand.sort();
+   */
   sort : function() {
     for (i = 0; i < this.cards.length; i++) {
       var k = this.cards[i];
@@ -29,10 +42,60 @@ var Hand = Class.$extend({
     }
   },
 
+  /** 
+   * Add a card to the hand
+   * card - a csrd object
+   *
+   * example:
+   *  > this.add_card(Card('queen-hearts'));
+   */
+  add_card: function(card) {
+    this.cards.push(card)  
+  },
+
+  /** 
+   * Get a card from the hand
+   * card - a string of the cards codename
+   *
+   * example:
+   *  > this.get_card('queen-hearts');
+   */
+  get_card : function(card) {
+    for (i = 0; i < this.cards.length; i++) {
+      if (card.card == card)
+        return this.cards[i];
+    } 
+    return [];
+  },
+
+  /** 
+   * Remove a card from the hand
+   * card - a string of the cards codename
+   *
+   * example:
+   *  > this.remove_card('queen-hearts');
+   */
+  remove_card : function(card) {
+    for (i = 0; i < this.cards.length; i++) {
+      if (card.card == card)
+        this.cards.splice(i,1);
+        break;
+    }   
+  },
+
+  /* Get the lowest card in the hand */
   lowest_card : function() {
     return this.cards[0];
   },
 
+  /** 
+   * Convert the cards in the hand to a 
+   * more readable list format
+   *
+   * example:
+   *  > hand.to_sting();
+   *  > ['queen-hears', 'ace-spades', 'jack-clubs']
+   */
   to_string: function() {
     var card_strings = [];
 
@@ -46,13 +109,36 @@ var Hand = Class.$extend({
 
 
 /**
+* Chosen Hand Object (Hand Child)
+*
+* Will control all actions associated with
+* a players choden hand such as: sort, get_card,
+* add_card, etc ..
+*
+* Example:
+* > var cards = [Card('queen-hearts'), Card('jack-clubs')];
+* > var hand = ChosenHand(cards);
+*/
+var ChosenHand = Hand.$extend({
+  __init__ : function() {
+    this.cards = [];
+  },
+});
+
+
+/**
 * Card Object
 *
-* Determinds face value of a card
-* and possibly other stuff
+* Creates a card object that contains
+* cards raw value, face value, and human
+* readable name
+*
+* Example:
+* > var card = Card('queen-hearts');
 */
 var Card = Class.$extend({
   __init__ : function(card) {
+    /* Card raw value */
     this.card = card;
 
     /* A dictionary of the number/type of card
@@ -73,7 +159,7 @@ var Card = Class.$extend({
       'ace': 14
     };
 
-    /* Point modifier for suits */
+    /* Value modifier for suits */
     this.suit_modifier = {
       'hearts': 0.4,
       'diamonds': 0.3,
@@ -81,7 +167,7 @@ var Card = Class.$extend({
       'spades': 0.1
     }
 
-    /* A player holder for the card value */
+    /* Card value and human name */
     this.value = 0;
     this.human_name = '';
 
@@ -99,6 +185,14 @@ var Card = Class.$extend({
     this.human_name = this.cap_first(split[0]) + ' of ' + this.cap_first(split[1]);
   },
 
+  /** 
+   * String functionality. Captializes
+   * the first letter in a string
+   *
+   * example:
+   *  > card.cap_first('any-string');
+   *  > 'Any-string'
+   */
   cap_first: function(str) {
     return str.charAt(0).toUpperCase() + str.substring(1);
   }
@@ -108,25 +202,30 @@ var Card = Class.$extend({
 /**
 * Deck Object
 *
-* Holds all the cards, shuffles
+* Holds all information about the games deck.
+* Generates, shuffles, and deals
 *
+* Example:
+* > var deck = Deck(num_of_players);
+* > deck.shuffle();
+* > var hands = deck.deal();
 */
 var Deck = Class.$extend({
   __init__ : function(players) {
     /* Total number of players */
     this.players = players;
 
-    /* All hands that are dealt */
+    /* All the hands that are dealt */
     this.hands = [];
 
     /* Cards left to deal and total amount to deal */
     this.cards_to_deal = 13 * players;
     this.cards_left_to_deal = 13 * players;
 
-    /* A dictionary of the entire deck */
+    /* A list holding the entire deck */
     this.deck = [];
 
-    /* Possible card face */
+    /* Card faces */
     this.faces = [
       'two',
       'three',
@@ -143,7 +242,7 @@ var Deck = Class.$extend({
       'ace'
     ]
 
-    /* Possible card suit */
+    /* Card suits */
     this.suits = [
       'hearts',
       'diamonds',
@@ -163,8 +262,13 @@ var Deck = Class.$extend({
       }
     }
   },
- 
-  /* Shuffles the deck using Fisherâ€“Yates algorithm */
+
+  /** 
+   * Shuffles the deck using Fisher-Yates algorithm
+   *
+   * example:
+   *  > deck.shuffle();
+   */
   shuffle : function() {
   	var new_deck = [];
   
@@ -185,7 +289,14 @@ var Deck = Class.$extend({
     this.deck = new_deck;
   },
 
-  /* Deals cards for N players */
+  /** 
+   * Deals the cards in a standard alternating
+   * fashion for N players. Returns a list of
+   * Hand objects
+   *
+   * example:
+   *  > var hands = deck.deal();
+   */
   deal : function() {
     var current_player = 0;
 
@@ -213,37 +324,31 @@ var Deck = Class.$extend({
     }
 
     return this.hands;
-  },
-
-  /* Add a player to the deck */
-  add_player: function() {
-    // TODO: Think through logic
-    /*
-    if ((this.players + 1) > 4) {
-        return null;
-    } else {
-      this.players++;
-    }
-    */ 
   }
 });
 
 
-/** 
- * Player Object
- * 
- * Handles hands, status
- */
+/**
+* Player Object
+*
+* Stores player information and creates
+* player abilities such as play hand, choose
+* card, remove cards, etc.
+*
+* Example:
+* > var hand = Hand(Card('queen-hearts'), Card('jack-clubs'));
+* > var player = Player('name', hand);
+*/
 var Player = Class.$extend({
   __init__ : function(name, hand) {
     /* The players name */
     this.name = name || 'Rodrigo';
 
-    /* A dictionary of cards the player has */
+    /* A list of cards the player has */
     this.hand = hand;
 
-    /* Chosen - cards the player has chosen to play */
-    this.chosen = {};
+    /* Cards the player has chosen to play */
+    this.chosen_hand = ChosenHand();
   },
 
   /* Play cards that are chosen */
@@ -251,14 +356,28 @@ var Player = Class.$extend({
  
   },
 
-  /* Choose card that will be played */
-  choose_card : function() {
-    
+  /** 
+   * Choose a card from the players hand
+   * and put in in the chosen hand.
+   *
+   * example:
+   *  > player.choose_card('queen-hearts');
+   */
+  choose_card : function(card) {
+    var chosen_card = this.hand.get_card(card);
+    if (chosen_card)
+      this.chosen_hand.add_card(chosen_card);
   },
 
-  /* Removed cards from the hand after play */
-  remove_cards : function() {
-  
+  /** 
+   * Loses a card from the players hand
+   * that the player might not have wanted
+   *
+   * example:
+   *  > player.lose_card('queen-hearts');
+   */
+  lose_card : function(card) {
+    this.chosen_hand.remove_card(card);
   }
 });
 
@@ -266,22 +385,26 @@ var Player = Class.$extend({
 /** 
  * Game Object
  * 
- * Handles number of players, new games
- * game winners, game statistics
+ * Bootstraps the entire game. Creates
+ * all of the Player, Hand, Card, and Deck
+ * objects and stores them in attributes.
+ * Majority of the game play will happen here.
  * 
+ * Example:
+ * > var game = Game(['player_name', 'player_name']);
  */
 var Game = Class.$extend({
   __init__ : function(players) {
     /* The numbers of players in the game */
     this.num_players = 0;
 
-    /* A list of the player objects in the game */
+    /* A list of the player in the game */
     this.players = [];
 
-    /* The deck object */
+    /* The Entire Deck */
     this.deck = null;
 
-    /* The hands objects */
+    /* All Hands */
     this.hands = null;
 
     /* Player who won the game */
@@ -293,7 +416,7 @@ var Game = Class.$extend({
     /* Players who's turn it is */
     this.current_player = null;
 
-    /* Statud of the game */
+    /* Status of the game */
     this.status = 'not_started';
 
     this.initialize(players);
