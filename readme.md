@@ -21,6 +21,15 @@ Sure, Just fork it and go. Pull requests accepted ;)
 - create visual version with AI only
 - create multiplayer version using Tornado or Node.js
 
+### Current example
+
+    > var game = Game(['Glenbot', 'Computer Player 1']);
+    > game.players[0].name
+    "Glenbot"
+    > game.players[0].hand.to_string();
+    ["Three of Diamonds", "Three of Hearts", "Six of Diamonds", "Seven of Clubs", "Eight of Diamonds", "Nine of Hearts", "Queen of Clubs", "Queen of Diamonds", "Queen of Hearts", "King of Spades", "Ace of Clubs", "Ace of Diamonds", "Two of Diamonds"]
+    > game.players[0].choose_card('three-diamonds');
+
 ### License - MIT
 
 Copyright (c) 2012 Glen Zangirolami
