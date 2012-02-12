@@ -62,7 +62,7 @@ var Hand = Class.$extend({
    */
   get_card : function(card) {
     for (i = 0; i < this.cards.length; i++) {
-      if (card.card == card)
+      if (this.cards[i].card == card)
         return this.cards[i];
     } 
     return [];
@@ -77,9 +77,10 @@ var Hand = Class.$extend({
    */
   remove_card : function(card) {
     for (i = 0; i < this.cards.length; i++) {
-      if (card.card == card)
-        this.cards.splice(i,1);
+      if (this.cards[i].card == card) {
+        this.cards.splice(i, 1);
         break;
+      }
     }   
   },
 
@@ -365,8 +366,10 @@ var Player = Class.$extend({
    */
   choose_card : function(card) {
     var chosen_card = this.hand.get_card(card);
-    if (chosen_card)
+    if (chosen_card.length != 0) {
       this.chosen_hand.add_card(chosen_card);
+      this.hand.remove_card(card);
+    }
   },
 
   /** 
@@ -377,7 +380,12 @@ var Player = Class.$extend({
    *  > player.lose_card('queen-hearts');
    */
   lose_card : function(card) {
-    this.chosen_hand.remove_card(card);
+    var chosen_card = this.chosen_hand.get_card(card);
+    if (chosen_card.length != 0) {
+      this.chosen_hand.remove_card(card);
+      this.hand.add_card(chosen_card);
+      this.hand.sort();
+    }
   }
 });
 
