@@ -136,8 +136,8 @@ var Hand = Class.$extend({
 * > var hand = ChosenHand(cards);
 */
 var ChosenHand = Hand.$extend({
-  __init__ : function() {
-    this.cards = [];
+  __init__ : function(cards) {
+    this.cards = cards || [];
 
     // Test for valid hand
     this.is_valid = false;
@@ -242,13 +242,43 @@ var ChosenHand = Hand.$extend({
    * Example:
    *  > this.is_sequential();
    */ 
-  is_sequential : function() {
-    if (this.cards.length > 0)
-      var eq_left = this.cards[this.cards.length - 1].face_value;
-      var eq_right = this.cards[0].face_value + (this.cards.length - 1);
-      return eq_left == eq_right;
+  is_sequential : function(cards) {
+    var cards = cards || this.cards;
+    var desired_sequence = [];
+    var fc_face_value = cards[0].face_value;
 
-    return false;
+    for (i = fc_face_value; i < fc_face_value + cards.length; i++) {
+      desired_sequence.push(i);
+    }
+
+    for (i = 0; i < cards.length; i++) {
+        if (cards[i].face_value != desired_sequence[i])
+            return false;
+    }
+
+    return true;
+  },
+
+   /** 
+   * Checks if 3 or more card pairs are sequential
+   *
+   * Returns boolean
+   *
+   * Example:
+   *  > this.is_sequential_pairs();
+   */ 
+  is_sequential_pairs : function() {
+    var odd_indexed_cards = [];
+    var even_indexed_cards = [];
+
+    for (i = 0; i < this.cards.length; i++) {
+      if ((i + 1) % 2 == 0)
+        even_indexed_cards.push(this.cards[i]);
+      if ((i + 1) % 2 == 1)
+        odd_indexed_cards.push(this.cards[i]);        
+    }
+
+    return this.is_sequential(even_indexed_cards) && this.is_sequential(odd_indexed_cards);
   },
 
   /**
@@ -337,7 +367,15 @@ var ChosenHand = Hand.$extend({
 
         if (this.have_same_suit())
           this.is_lock = true;
-      }      
+      }
+
+      // detect straight of pairs
+      if (this.cards.length % 2 == 0 && this.cards.length >= 6) {
+          if (this.is_sequential_pairs()) {
+              this.is_valid = true;
+              this.is_buster = true;
+          }
+      }
     } 
 
     // set the value and type of the hand
@@ -499,18 +537,18 @@ var Deck = Class.$extend({
   	var new_deck = [];
   
     // copy over the deck
-  	for (var i = 0; i < this.deck.length; i++) {
+    for (var i = 0; i < this.deck.length; i++) {
       new_deck.push(this.deck[i]);	
-  	}
+    }
 
     // shuffle
-  	for (var i = 51; i >= 0; i--) {
+    for (var i = 51; i >= 0; i--) {
       var j = Math.floor(Math.random()*i)
       var j_val = new_deck[j];
       var i_val = new_deck[i];
       new_deck[j] = i_val;
       new_deck[i] = j_val;
-  	}
+    }
 
     this.deck = new_deck;
   },
@@ -656,9 +694,14 @@ var Game = Class.$extend({
   },
 
   initialize : function (players) {
+    if (typeof(players) != 'object')
+      throw "Game must be initialize with an array of player names";
 
     // get the number of players
     this.num_players = players.length;
+
+    if (this.num_players <= 1)
+      throw "There must be at least 2 players to initialize a game";
 
     // initialize the deck and shuffle
     this.deck = Deck(this.num_players);

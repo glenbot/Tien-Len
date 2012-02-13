@@ -15,6 +15,11 @@ See rules. http://www.pagat.com/climbing/thirteen.html
 
 Sure, Just fork it and go. Pull requests accepted ;)
 
+### Testing
+
+Tien Len uses qunit to run tests. You can find current tests in the
+tests folder.
+
 ### TODO
 
 - finish text only version of the game
