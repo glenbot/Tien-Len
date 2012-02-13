@@ -208,6 +208,49 @@ var ChosenHand = Hand.$extend({
     return same;
   },
 
+  /** 
+   * Checks if one or more card have the same suit
+   *
+   * Returns boolean
+   *
+   * Example:
+   *  > this.have_same_suit();
+   */ 
+  have_same_suit : function() {
+    var same = false;
+    var prev_suit = '';
+
+    for (i =0; i < this.cards.length; i++) {
+      if (prev_suit != '') {
+        if (prev_suit == this.cards[i].card.split('-')[1]) {
+          same = true;
+        } else {
+          same = false;
+        }
+      }
+      prev_suit = this.cards[i].card.split('-')[1];
+    }
+
+    return same;   
+  },
+
+  /** 
+   * Checks if 2 or more cards are sequential
+   *
+   * Returns boolean
+   *
+   * Example:
+   *  > this.is_sequential();
+   */ 
+  is_sequential : function() {
+    if (this.cards.length > 0)
+      var eq_left = this.cards[this.cards.length - 1].face_value;
+      var eq_right = this.cards[0].face_value + (this.cards.length - 1);
+      return eq_left == eq_right;
+
+    return false;
+  },
+
   /**
   * Checks to see if the cards make a
   * valid hand: two of a kind, three, etc.
@@ -231,14 +274,14 @@ var ChosenHand = Hand.$extend({
     // reset hand flags
     this.reset();
 
-    // check for single card
+    // detect single card
     if (this.cards.length == 1) {
       hand_type = 's';
       this.is_valid = true;
       this.hand_type = hand_type;
     }
 
-    // check for a pair
+    // detect two of a kind
     if (this.cards.length == 2) {
       if (this.have_same_face_values()) {
         hand_type = 'tk';
@@ -247,25 +290,55 @@ var ChosenHand = Hand.$extend({
     }
         
     
-    // check for four kind or straight
+    // detect three of a kind or straight
     if (this.cards.length == 3) {
-      // check for three of a kind
+      // detect three of a kind
       if (this.have_same_face_values()) {
         hand_type = 'trk';
         this.is_valid = true;
       }
+
+      // detect straight
+      if (this.is_sequential()) {
+        hand_type = 'str';
+        this.is_valid = true;
+
+        if (this.have_same_suit())
+          this.is_lock = true;
+      }
     }
 
-    // check for four of a kind or straight
+    // detect four of a kind, straight, and straight w/lock
     if (this.cards.length == 4) {
-      // check for 4 of a kind
+      // detect four of a kind
       if (this.have_same_face_values()) {
         hand_type = 'fk';
         this.is_valid = true;
         this.is_buster = true;
       }
-    }   
-          
+
+      // detect straight
+      if (this.is_sequential()) {
+        hand_type = 'str';
+        this.is_valid = true;
+
+        if (this.have_same_suit())
+          this.is_lock = true;
+      }
+    }
+
+    // detect straight, and straight w/lock
+    // TODO: detect paired straight
+    if (this.cards.length > 4) {
+      // detect straight
+      if (this.is_sequential()) {
+        hand_type = 'str';
+        this.is_valid = true;
+
+        if (this.have_same_suit())
+          this.is_lock = true;
+      }      
+    } 
 
     // set the value and type of the hand
     this.set_value();
