@@ -13,6 +13,9 @@ var Hand = Class.$extend({
   __init__ : function(cards) {
     this.cards = cards;
 
+    // Total Hand Value
+    this.value = 0;
+
     this.initialize();
   },
 
@@ -40,6 +43,18 @@ var Hand = Class.$extend({
 
       this.cards[j + 1] = k;
     }
+  },
+
+  /** 
+   * Set the total value of a hand
+   *
+   * example:
+   *  > this.set_value();
+   */
+  set_value: function() {
+    for (i = 0; i < this.cards.length; i++) {
+      this.value += this.cards[i].value;
+    } 
   },
 
   /** 
@@ -123,7 +138,140 @@ var Hand = Class.$extend({
 var ChosenHand = Hand.$extend({
   __init__ : function() {
     this.cards = [];
+
+    // Test for valid hand
+    this.is_valid = false;
+
+    // Test for special hands
+    this.is_buster = false;
+    this.is_lock = false;
+
+    // Hand type and types for human
+    // readable purposes
+    this.human_hand_type = '';
+    this.human_hand_types = {
+      's': 'Single',
+      'tk': 'Two of a Kind',
+      'trk': 'Three of a Kind',
+      'fk': 'Four of a kind (buster)',
+      'str': 'Straight',
+      'sl': 'Straight Lock',
+      'sp': 'Straight of Pairs (buster)'
+    };
+
+    // Hand type and types for logic
+    this.hand_type = '';
   },
+
+  /** 
+   * Resets a hand to default values
+   *
+   * Example:
+   *  > this.reset();
+   */
+  reset : function() {
+    this.value = 0;
+    this.human_hand_type = '';
+    this.hand_type = '';
+    this.is_valid = false;
+    this.is_buster = false;
+    this.is_lock = false;
+  },
+
+
+  /** 
+   * Checks if one or more cards have
+   * the same face values. For pairs
+   * and three of a kind, and four
+   * or a kind
+   *
+   * Returns boolean
+   *
+   * Example:
+   *  > this.have();
+   */ 
+  have_same_face_values : function() {
+    var same = false;
+    var prev_face_value = 0;
+
+    for (i =0; i < this.cards.length; i++) {
+      if (prev_face_value > 0) {
+        if (prev_face_value == this.cards[i].face_value) {
+          same = true;
+        } else {
+          same = false;
+        }
+      }
+      prev_face_value = this.cards[i].face_value;
+    }
+
+    return same;
+  },
+
+  /**
+  * Checks to see if the cards make a
+  * valid hand: two of a kind, three, etc.
+  * Lots of logic here
+  *
+  * Possible hands:
+  *   Single card
+  *   Two of a kind
+  *   Three of a kind
+  *   Four of a kind (buster)
+  *   Straight
+  *   Straight of same suit (Lock)
+  *   Straight of pairs (buster)
+  *
+  * example:
+  *  > this.set_hand();
+  */
+  set_hand : function() {
+    var hand_type = '';
+
+    // reset hand flags
+    this.reset();
+
+    // check for single card
+    if (this.cards.length == 1) {
+      hand_type = 's';
+      this.is_valid = true;
+      this.hand_type = hand_type;
+    }
+
+    // check for a pair
+    if (this.cards.length == 2) {
+      if (this.have_same_face_values()) {
+        hand_type = 'tk';
+        this.is_valid = true;
+      }
+    }
+        
+    
+    // check for four kind or straight
+    if (this.cards.length == 3) {
+      // check for three of a kind
+      if (this.have_same_face_values()) {
+        hand_type = 'trk';
+        this.is_valid = true;
+      }
+    }
+
+    // check for four of a kind or straight
+    if (this.cards.length == 4) {
+      // check for 4 of a kind
+      if (this.have_same_face_values()) {
+        hand_type = 'fk';
+        this.is_valid = true;
+        this.is_buster = true;
+      }
+    }   
+          
+
+    // set the value and type of the hand
+    this.set_value();
+    this.hand_type = hand_type;
+    this.human_hand_type = this.human_hand_types[hand_type];  
+  }
 });
 
 
@@ -168,7 +316,8 @@ var Card = Class.$extend({
       'spades': 0.1
     }
 
-    /* Card value and human name */
+    /* Card values and human name */
+    this.face_value = 0;
     this.value = 0;
     this.human_name = '';
 
@@ -179,6 +328,9 @@ var Card = Class.$extend({
   initialize : function() {
     var split = this.card.split('-');
   
+    // set the face value of the card for matching purposes
+    this.face_value = this.face_values[split[0]];
+
     // set the numerical face value of the card
     this.value = this.face_values[split[0]] + this.suit_modifier[split[1]];
 
