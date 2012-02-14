@@ -1,4 +1,11 @@
 /**
+* Tien Len 13
+*
+* :copyright: (c) 2012 by Glen Zangirolami. 
+* :license: MIT.
+*/
+
+/**
 * Hand Object
 *
 * Will control all actions associated with
@@ -49,7 +56,7 @@ var Hand = Class.$extend({
    * Set the total value of a hand
    *
    * example:
-   *  > this.set_value();
+   *  > hand.set_value();
    */
   set_value: function() {
     for (i = 0; i < this.cards.length; i++) {
@@ -62,7 +69,7 @@ var Hand = Class.$extend({
    * card - a csrd object
    *
    * example:
-   *  > this.add_card(Card('queen-hearts'));
+   *  > hand.add_card(Card('queen-hearts'));
    */
   add_card: function(card) {
     this.cards.push(card)  
@@ -88,7 +95,7 @@ var Hand = Class.$extend({
    * card - a string of the cards codename
    *
    * example:
-   *  > this.remove_card('queen-hearts');
+   *  > hand.remove_card('queen-hearts');
    */
   remove_card : function(card) {
     for (i = 0; i < this.cards.length; i++) {
@@ -167,7 +174,7 @@ var ChosenHand = Hand.$extend({
    * Resets a hand to default values
    *
    * Example:
-   *  > this.reset();
+   *  > hand.reset();
    */
   reset : function() {
     this.value = 0;
@@ -188,7 +195,7 @@ var ChosenHand = Hand.$extend({
    * Returns boolean
    *
    * Example:
-   *  > this.have();
+   *  > hand.have();
    */ 
   have_same_face_values : function() {
     var same = false;
@@ -214,7 +221,7 @@ var ChosenHand = Hand.$extend({
    * Returns boolean
    *
    * Example:
-   *  > this.have_same_suit();
+   *  > hand.have_same_suit();
    */ 
   have_same_suit : function() {
     var same = false;
@@ -240,7 +247,7 @@ var ChosenHand = Hand.$extend({
    * Returns boolean
    *
    * Example:
-   *  > this.is_sequential();
+   *  > hand.is_sequential();
    */ 
   is_sequential : function(cards) {
     var cards = cards || this.cards;
@@ -265,7 +272,7 @@ var ChosenHand = Hand.$extend({
    * Returns boolean
    *
    * Example:
-   *  > this.is_sequential_pairs();
+   *  > hand.is_sequential_pairs();
    */ 
   is_sequential_pairs : function() {
     var odd_indexed_cards = [];
@@ -296,7 +303,7 @@ var ChosenHand = Hand.$extend({
   *   Straight of pairs (buster)
   *
   * example:
-  *  > this.set_hand();
+  *  > hand.set_hand();
   */
   set_hand : function() {
     var hand_type = '';
@@ -714,6 +721,31 @@ var Game = Class.$extend({
     for (i = 0; i < players.length; i++) {
       this.players.push(Player(players[i], this.hands.pop()));
     }
+
+    this.set_start_player();
+  },
+
+  /** 
+   * Detects who has the lowest card and
+   * sets that player as the current_player
+   *
+   * example:
+   *  > game.set_start_player();
+   */
+  set_start_player : function() {
+      var prev_low_card = 0
+
+      // set a default start player
+      this.current_player = this.players[0];
+
+      // get the real start player from card values
+      for (i = 0; i < this.players.length; i++) {
+        if (prev_low_card != 0) {
+          if (this.players[i].hand.lowest_card().value < prev_low_card)
+            this.current_player = this.players[i];
+          }
+          prev_low_card = this.players[i].hand.lowest_card().value;
+      }
   },
 
   /* Start a new game */

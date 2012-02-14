@@ -1,3 +1,13 @@
+/**
+* Qunit Tests
+*
+* :copyright: (c) 2012 by Glen Zangirolami. 
+* :license: MIT.
+*/
+
+/**
+* general Game tests
+*/
 test('game initialization', function() {
     var init_exc_1 = "Game must be initialize with an array of player names";
     var init_exc_2 = "There must be at least 2 players to initialize a game";
@@ -32,6 +42,22 @@ test('game attributes', function() {
     ok(game.players[0] instanceof Player, 'game.players[0] instanceof Player');
     ok(game.players[1] instanceof Player, 'game.players[1] instanceof Player');
 });
+
+test('game.set_start_player', function() {
+    var hand1 =  Hand([
+        Card('king-diamonds')
+    ]);
+    var hand2 =  Hand([
+        Card('three-hearts')
+    ]);
+    var game = Game(['player1', 'player2']);
+
+    game.players[0].hand = hand1;
+    game.players[1].hand = hand2;
+    game.set_start_player();
+
+    equal(game.current_player.name, "player2");
+})
 
 /**
 * General ChosenHand Tests
@@ -175,4 +201,28 @@ test('chosen_hand.is_buster', function() {
     chosen_hand = ChosenHand(cards);
     chosen_hand.set_hand();
     ok(chosen_hand.is_buster, chosen_hand.to_string() + ' is a buster');
+})
+
+/**
+* general Player tests
+*/
+test('player.choose_card', function() {
+    var hand =  Hand([
+        Card('three-clubs')
+    ]);
+    var player = Player('Qunit Player', hand);
+
+    player.choose_card('three-clubs');
+    equal(player.chosen_hand.to_string()[0], "Three of Clubs");
+})
+
+test('player.lose_card', function() {
+    var hand =  Hand([
+        Card('three-clubs')
+    ]);
+    var player = Player('Qunit Player', hand);
+
+    player.choose_card('three-clubs');
+    player.lose_card('three-clubs');
+    equal(player.chosen_hand.to_string().length, 0);
 })
