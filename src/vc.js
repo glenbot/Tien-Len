@@ -34,9 +34,6 @@ var Hand = Class.$extend({
   /** 
    * Sorts the cards in the deck using an
    * insertion sort by card value
-   *
-   * example:
-   *  > hand.sort();
    */
   sort : function() {
     for (i = 0; i < this.cards.length; i++) {
@@ -53,10 +50,7 @@ var Hand = Class.$extend({
   },
 
   /** 
-   * Set the total value of a hand
-   *
-   * example:
-   *  > hand.set_value();
+   * Calculate and set the total value of a hand
    */
   set_value: function() {
     for (i = 0; i < this.cards.length; i++) {
@@ -66,21 +60,34 @@ var Hand = Class.$extend({
 
   /** 
    * Add a card to the hand
-   * card - a csrd object
+   * card - a card object
    *
-   * example:
+   * Example:
    *  > hand.add_card(Card('queen-hearts'));
    */
   add_card: function(card) {
-    this.cards.push(card)  
+    this.cards.push(card);
+  },
+
+  /** 
+   * Add cards to the hand
+   * card - a csrd object
+   *
+   * Example:
+   *  > hand.add_cards([
+   *      Card('queen-hearts'),
+   *      Card('queen-diamonds'),
+   *    ]);
+   */
+  add_cards: function(cards) {
+    for (var i in cards) {
+        this.cards.push(cards[i]);
+    } 
   },
 
   /** 
    * Get a card from the hand
    * card - a string of the cards codename
-   *
-   * example:
-   *  > this.get_card('queen-hearts');
    */
   get_card : function(card) {
     for (i = 0; i < this.cards.length; i++) {
@@ -93,9 +100,6 @@ var Hand = Class.$extend({
   /** 
    * Remove a card from the hand
    * card - a string of the cards codename
-   *
-   * example:
-   *  > hand.remove_card('queen-hearts');
    */
   remove_card : function(card) {
     for (i = 0; i < this.cards.length; i++) {
@@ -106,7 +110,12 @@ var Hand = Class.$extend({
     }   
   },
 
-  /* Get the lowest card in the hand */
+  /** 
+   * Convert the cards in the hand to a 
+   * more readable list format
+   *
+   * Assumes sort has been called
+   */
   lowest_card : function() {
     return this.cards[0];
   },
@@ -132,10 +141,27 @@ var Hand = Class.$extend({
 
 
 /**
+* Table Hand Object (Hand Child)
+*
+* Will control all actions associated with
+* a hand that is layed on the table
+*
+* Example:
+* > var cards = [Card('queen-hearts'), Card('jack-clubs')];
+* > var hand = TableHand(cards);
+*/
+var TableHand = Hand.$extend({
+  __init__ : function(cards) {
+    this.cards = cards || [];
+  }
+});
+
+
+/**
 * Chosen Hand Object (Hand Child)
 *
 * Will control all actions associated with
-* a players choden hand such as: sort, get_card,
+* a players chosen hand such as: sort, get_card,
 * add_card, etc ..
 *
 * Example:
@@ -146,10 +172,10 @@ var ChosenHand = Hand.$extend({
   __init__ : function(cards) {
     this.cards = cards || [];
 
-    // Test for valid hand
+    // Boolean for valid hand
     this.is_valid = false;
 
-    // Test for special hands
+    // Booleans for special hands
     this.is_buster = false;
     this.is_lock = false;
 
@@ -166,15 +192,12 @@ var ChosenHand = Hand.$extend({
       'sp': 'Straight of Pairs (buster)'
     };
 
-    // Hand type and types for logic
+    // Hand type for logic
     this.hand_type = '';
   },
 
   /** 
    * Resets a hand to default values
-   *
-   * Example:
-   *  > hand.reset();
    */
   reset : function() {
     this.value = 0;
@@ -193,9 +216,6 @@ var ChosenHand = Hand.$extend({
    * or a kind
    *
    * Returns boolean
-   *
-   * Example:
-   *  > hand.have();
    */ 
   have_same_face_values : function() {
     var same = false;
@@ -219,9 +239,6 @@ var ChosenHand = Hand.$extend({
    * Checks if one or more card have the same suit
    *
    * Returns boolean
-   *
-   * Example:
-   *  > hand.have_same_suit();
    */ 
   have_same_suit : function() {
     var same = false;
@@ -245,9 +262,6 @@ var ChosenHand = Hand.$extend({
    * Checks if 2 or more cards are sequential
    *
    * Returns boolean
-   *
-   * Example:
-   *  > hand.is_sequential();
    */ 
   is_sequential : function(cards) {
     var cards = cards || this.cards;
@@ -270,9 +284,6 @@ var ChosenHand = Hand.$extend({
    * Checks if 3 or more card pairs are sequential
    *
    * Returns boolean
-   *
-   * Example:
-   *  > hand.is_sequential_pairs();
    */ 
   is_sequential_pairs : function() {
     var odd_indexed_cards = [];
@@ -301,9 +312,6 @@ var ChosenHand = Hand.$extend({
   *   Straight
   *   Straight of same suit (Lock)
   *   Straight of pairs (buster)
-  *
-  * example:
-  *  > hand.set_hand();
   */
   set_hand : function() {
     var hand_type = '';
@@ -364,8 +372,7 @@ var ChosenHand = Hand.$extend({
       }
     }
 
-    // detect straight, and straight w/lock
-    // TODO: detect paired straight
+    // detect straight, paired straigh, and straight w/lock
     if (this.cards.length > 4) {
       // detect straight
       if (this.is_sequential()) {
@@ -536,9 +543,6 @@ var Deck = Class.$extend({
 
   /** 
    * Shuffles the deck using Fisher-Yates algorithm
-   *
-   * example:
-   *  > deck.shuffle();
    */
   shuffle : function() {
   	var new_deck = [];
@@ -564,9 +568,6 @@ var Deck = Class.$extend({
    * Deals the cards in a standard alternating
    * fashion for N players. Returns a list of
    * Hand objects
-   *
-   * example:
-   *  > var hands = deck.deal();
    */
   deal : function() {
     var current_player = 0;
@@ -608,23 +609,34 @@ var Deck = Class.$extend({
 *
 * Example:
 * > var hand = Hand(Card('queen-hearts'), Card('jack-clubs'));
-* > var player = Player('name', hand);
+* > var player = Player('name', hand, TableHand());
 */
 var Player = Class.$extend({
-  __init__ : function(name, hand) {
+  __init__ : function(name, hand, table_hand) {
     /* The players name */
     this.name = name || 'Rodrigo';
 
     /* A list of cards the player has */
     this.hand = hand;
 
+    this.table_hand = table_hand;
+
     /* Cards the player has chosen to play */
     this.chosen_hand = ChosenHand();
   },
 
-  /* Play cards that are chosen */
+  /** 
+   * Put the cards onto the table hand
+   */
   play : function() {
- 
+    this.chosen_hand.set_hand();
+
+    if (this.chosen_hand.is_valid) {
+        // TODO: Logic to see if hand beats the table hand
+        this.table_hand.add_cards(this.chosen_hand.cards);
+        return [true, 'Hand is valid and played'];
+    }
+    return [false, 'Hand is not valid'];
   },
 
   /** 
@@ -685,6 +697,9 @@ var Game = Class.$extend({
     /* All Hands */
     this.hands = null;
 
+    /* Table Hand */
+    this.table_hand = TableHand();
+
     /* Player who won the game */
     this.winner = null;
 
@@ -694,8 +709,11 @@ var Game = Class.$extend({
     /* Players who's turn it is */
     this.current_player = null;
 
+    /* Index of next player in list */
+    this.next_player = 0;
+
     /* Status of the game */
-    this.status = 'not_started';
+    this.started = false;
 
     this.initialize(players);
   },
@@ -719,7 +737,7 @@ var Game = Class.$extend({
 
     // initialize the players with hands
     for (i = 0; i < players.length; i++) {
-      this.players.push(Player(players[i], this.hands.pop()));
+      this.players.push(Player(players[i], this.hands.pop(), this.table_hand));
     }
 
     this.set_start_player();
@@ -728,9 +746,6 @@ var Game = Class.$extend({
   /** 
    * Detects who has the lowest card and
    * sets that player as the current_player
-   *
-   * example:
-   *  > game.set_start_player();
    */
   set_start_player : function() {
       var prev_low_card = 0
@@ -746,15 +761,65 @@ var Game = Class.$extend({
           }
           prev_low_card = this.players[i].hand.lowest_card().value;
       }
+
+      this.set_next_player();
   },
 
-  /* Start a new game */
-  start : function() {
-    this.status = 'started';
+  /** 
+   * Get the current players and automatically 
+   * sets who needs to go next
+   */
+  set_next_player : function() {
+    var current_player_name = this.current_player.name;
+
+    for (i = 0; i < this.players.length; i++) {
+      if (this.players[i].name == current_player_name) {
+        if (i == this.players.length - 1) {
+          this.next_player = 0;
+        } else {
+          this.next_player = i + 1;
+        }
+        break;
+      }
+    }
   },
 
-  /* Quit the game */
-  quit : function() {
+  /** 
+   * Will play the current players hand
+   * to the table hand
+   *
+   * returns list of validity and reason
+   * [boolean, msg]
+   */
+  player_play : function() {
+      if (!this.started)
+         return [false, 'Game has not started yet.'];
     
+      var result = this.current_player.play();
+
+      if (result[0] == true) {
+          this.current_player = this.players[this.next_player];
+          this.set_next_player();
+          return result;
+      } else {
+         // return [false, message]
+         return [result[0], result[1]];
+      }
+  },
+
+  /** 
+   * Sets the game started boolean
+   * flag to true
+   */
+  start : function() {
+    this.started = true;
+  },
+
+  /** 
+   * Sets the game started boolean
+   * flag to false
+   */
+  quit : function() {
+    this.started = false;
   }
 });

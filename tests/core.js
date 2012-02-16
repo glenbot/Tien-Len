@@ -31,16 +31,56 @@ test('game initialization', function() {
         return err === init_exc_2;
     }, "Game(['Player1'] is valid but not enough players");
 
-    var game = Game(['Player1', 'Player 2']);
-    ok(game instanceof Game, "Game(['Player1', 'Player 2'] is a correct initialization)");
+    var game = Game(['Player 1', 'Player 2']);
+    ok(game instanceof Game, "Game(['Player1', 'Player 2'] is a correct initialization");
 });
 
 test('game attributes', function() {
-    var game = Game(['Player1', 'Player 2']);
+    var game = Game(['Player 1', 'Player 2']);
     
+    // test all instances
     ok(game.deck instanceof Deck, 'game.deck instanceof Deck');
+    ok(game.table_hand instanceof TableHand, 'game.table_hand instanceof TableHand');
     ok(game.players[0] instanceof Player, 'game.players[0] instanceof Player');
     ok(game.players[1] instanceof Player, 'game.players[1] instanceof Player');
+
+    // test standard attributes
+    equal(game.num_players, 2, 'game.num_players is correct amount');
+    equal(game.winner, null, 'game.winner is null');
+    equal(game.current_winner, null, 'game.current_winner is null');
+    equal(game.started, false, 'game.status is false');
+});
+
+test('game play', function() {
+    var game = Game(['Player1', 'Player2']);
+
+    // test game start/quit
+    game.start();
+    ok(game.started, 'game.started is true after calling game.start()');
+
+    game.quit();
+    equal(game.started, false, 'game.started is false after calling game.quit()');
+
+    // test that table hand propogates to each player
+    var card_value = game.players[0].hand.cards[0].value;
+    game.players[0].choose_card(game.players[0].hand.cards[0].card);
+    ok(game.players[0].play(), 'game.play() returns true');
+    equals(game.players[1].table_hand.cards[0].value, card_value, 'table hand propgates to each player');
+
+    // test game play without start
+    var game = Game(['Player1', 'Player2']);
+    var play_result = game.player_play();
+    equals(play_result[0], false, play_result[1]);
+
+    // test game play with start, should be invalid hand
+    game.start();
+    play_result = game.player_play();
+    equals(play_result[0], false, play_result[1]);
+
+    // test valid hand play
+    game.current_player.choose_card(game.current_player.hand.cards[0].card);
+    play_result = game.player_play();
+    equals(play_result[0], true, play_result[1]);
 });
 
 test('game.set_start_player', function() {
