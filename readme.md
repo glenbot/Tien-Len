@@ -26,44 +26,33 @@ tests folder.
 - create visual version with AI only
 - create multiplayer version using Tornado or Node.js
 
-### Current example
+### Current game play example
 
-Choosing a card:
+    var game = Game(['player1','player2']);
+    game.start();
 
-    > var game = Game(['Glenbot', 'Computer Player 1']);
-    > game.players[0].name
-    "Glenbot"
-    > game.players[0].hand.to_string();
-    ["Three of Diamonds", "Three of Hearts", "Six of Diamonds", "Seven of Clubs", "Eight of Diamonds", "Nine of Hearts", "Queen of Clubs", "Queen of Diamonds", "Queen of Hearts", "King of Spades", "Ace of Clubs", "Ace of Diamonds", "Two of Diamonds"]
-    > game.players[0].choose_card('three-diamonds');
+    game.current_player.hand.to_string();
+    ["Three of Spades", "Three of Hearts", "Five of Spades", "Five of Clubs", "Five of Diamonds", "Six of Spades", "Six of Diamonds", "Eight of Spades", "Eight of Hearts", "Nine of Clubs", "Ten of Spades", "Queen of Hearts", "Ace of Diamonds"]
+    game.current_player.choose_card('three-spades');
+    game.current_player.choose_card('three-hearts');
+    game.player_play();
+    [true, "Hand is valid and better"]
 
-Setting a hand:
+    game.current_player.hand.to_string();
+    ["Four of Spades", "Four of Diamonds", "Seven of Spades", "Seven of Diamonds", "Eight of Clubs", "Ten of Clubs", "Jack of Spades", "Jack of Hearts", "Queen of Spades", "King of Spades", "King of Hearts", "Ace of Spades", "Two of Diamonds"]
+    game.current_player.choose_card('four-spades');
+    game.current_player.choose_card('four-diamonds');
+    game.player_play();
+    [true, "Hand is valid and better"]
 
-    > var game = Game(['Glenbot', 'Computer Player 1']);
+    game.current_player.hand.to_string();
+    ["Five of Spades", "Five of Clubs", "Five of Diamonds", "Six of Spades", "Six of Diamonds", "Eight of Spades", "Eight of Hearts", "Nine of Clubs", "Ten of Spades", "Queen of Hearts", "Ace of Diamonds"]
+    game.player_pass();
+    [true, "passed"]
+    game.current_player.hand.to_string();
+    ["Seven of Spades", "Seven of Diamonds", "Eight of Clubs", "Ten of Clubs", "Jack of Spades", "Jack of Hearts", "Queen of Spades", "King of Spades", "King of Hearts", "Ace of Spades", "Two of Diamonds"]
 
-    > game.players[0].hand.to_string();
-    ["Four of Diamonds", "Five of Clubs", "Six of Clubs", "Six of Diamonds", "Nine of Spades", "Nine of Clubs", "Nine of Hearts", "Ten of Clubs", "Jack of Hearts", "Queen of Clubs", "King of Spades", "Ace of Hearts", "Two of Spades"]
-
-    > game.players[0].choose_card('nine-spades');
-    > game.players[0].choose_card('nine-clubs');
-    > game.players[0].choose_card('nine-hearts');
-
-    > game.players[0].chosen_hand.to_string();
-    ["Nine of Spades", "Nine of Clubs", "Nine of Hearts"]
-
-    > game.players[0].chosen_hand.set_hand();
-
-    > game.players[0].chosen_hand.hand_type;
-    "trk"
-
-    > game.players[0].chosen_hand.human_hand_type;
-    "Three of a Kind"
-
-    > game.players[0].chosen_hand.is_valid;
-    true
-
-    > game.players[0].chosen_hand.value;
-    27.699999999999996
+and so on .......
 
 ### License - MIT
 

@@ -111,6 +111,13 @@ var Hand = Class.$extend({
   },
 
   /** 
+   * Remove all cards from the hand
+   */
+  remove_all_cards : function() {
+    this.cards = []; 
+  },
+
+  /** 
    * Convert the cards in the hand to a 
    * more readable list format
    *
@@ -139,24 +146,6 @@ var Hand = Class.$extend({
   }
 });
 
-
-/**
-* Table Hand Object (Hand Child)
-*
-* Will control all actions associated with
-* a hand that is layed on the table
-*
-* Example:
-* > var cards = [Card('queen-hearts'), Card('jack-clubs')];
-* > var hand = TableHand(cards);
-*/
-var TableHand = Hand.$extend({
-  __init__ : function(cards) {
-    this.cards = cards || [];
-  }
-});
-
-
 /**
 * Chosen Hand Object (Hand Child)
 *
@@ -171,6 +160,9 @@ var TableHand = Hand.$extend({
 var ChosenHand = Hand.$extend({
   __init__ : function(cards) {
     this.cards = cards || [];
+
+    // Total Hand Value
+    this.value = 0;
 
     // Boolean for valid hand
     this.is_valid = false;
@@ -401,6 +393,23 @@ var ChosenHand = Hand.$extend({
 
 
 /**
+* Table Hand Object (Hand Child)
+*
+* Will control all actions associated with
+* a hand that is layed on the table
+*
+* Example:
+* > var cards = [Card('queen-hearts'), Card('jack-clubs')];
+* > var hand = TableHand(cards);
+*/
+var TableHand = ChosenHand.$extend({
+  __init__ : function(cards) {
+    this.$super(cards || []);
+  }
+});
+
+
+/**
 * Card Object
 *
 * Creates a card object that contains
@@ -626,15 +635,46 @@ var Player = Class.$extend({
   },
 
   /** 
+   * Pass, if cards are in the chosen hand
+   * place them back into the players hand
+   * sort them, and reset the chosen_hand
+   */
+  pass : function() {
+      // put the cards back in the hand
+      for (i = 0; i < this.chosen_hand.length; i++) {
+          this.hand.add_card(this.chosen_hand[i]);
+      }
+      this.hand.sort();
+      this.chosen_hand.reset();
+  },
+
+  /** 
    * Put the cards onto the table hand
+   * 
+   * first_play, boolean
    */
   play : function() {
     this.chosen_hand.set_hand();
 
     if (this.chosen_hand.is_valid) {
-        // TODO: Logic to see if hand beats the table hand
-        this.table_hand.add_cards(this.chosen_hand.cards);
-        return [true, 'Hand is valid and played'];
+        var num_table_cards = this.table_hand.cards.length;
+
+        // set the table hand
+        this.table_hand.set_hand();
+
+        // validate the hand and play if possible
+        if (this.chosen_hand.hand_type == this.table_hand.hand_type || num_table_cards == 0) {
+            if (this.chosen_hand.value > this.table_hand.value) {
+                this.table_hand.remove_all_cards();
+                this.table_hand.add_cards(this.chosen_hand.cards);
+                this.chosen_hand.remove_all_cards();
+                return [true, 'Hand is valid and better'];
+            } else {
+                return [false, 'Hand is valid, but not better'];
+            }
+        } else {
+            return [false, 'Hand types do not match'];
+        }
     }
     return [false, 'Hand is not valid'];
   },
@@ -698,7 +738,7 @@ var Game = Class.$extend({
     this.hands = null;
 
     /* Table Hand */
-    this.table_hand = TableHand();
+    this.table_hand = TableHand([]);
 
     /* Player who won the game */
     this.winner = null;
@@ -805,6 +845,18 @@ var Game = Class.$extend({
          // return [false, message]
          return [result[0], result[1]];
       }
+  },
+
+  /** 
+   * Gives the play to the next player
+   */
+  player_pass : function() {
+      var result = [true, 'passed']
+
+      this.current_player = this.players[this.next_player];
+      this.set_next_player();
+
+      return result;
   },
 
   /** 

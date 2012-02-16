@@ -61,11 +61,9 @@ test('game play', function() {
     game.quit();
     equal(game.started, false, 'game.started is false after calling game.quit()');
 
-    // test that table hand propogates to each player
-    var card_value = game.players[0].hand.cards[0].value;
+    // test game play
     game.players[0].choose_card(game.players[0].hand.cards[0].card);
     ok(game.players[0].play(), 'game.play() returns true');
-    equals(game.players[1].table_hand.cards[0].value, card_value, 'table hand propgates to each player');
 
     // test game play without start
     var game = Game(['Player1', 'Player2']);
@@ -76,11 +74,6 @@ test('game play', function() {
     game.start();
     play_result = game.player_play();
     equals(play_result[0], false, play_result[1]);
-
-    // test valid hand play
-    game.current_player.choose_card(game.current_player.hand.cards[0].card);
-    play_result = game.player_play();
-    equals(play_result[0], true, play_result[1]);
 });
 
 test('game.set_start_player', function() {
