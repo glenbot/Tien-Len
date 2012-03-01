@@ -1,63 +1,127 @@
 <html>
 <head>
     <title>Tien Len</title>
+    <link href='http://fonts.googleapis.com/css?family=Walter+Turncoat' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap-collapse.js"></script>
     <script type="text/javascript" src="src/classy.js"></script>
     <script type="text/javascript" src="src/vc.js"></script>
 </head>
 <body>
+    <div class="navbar navbar-fixed-top">
+       <div class="navbar-inner">
+         <div class="container">
+              <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+              <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </a>
+         
+              <!-- Be sure to leave the brand out there if you want it shown -->
+              <a class="brand walter" href="/">Tien Len 13</a>
+         
+              <!-- Everything you want hidden at 940px or less, place within here -->
+              <div class="nav-collapse">
+                <ul class="nav">
+                    <li><a href="#">Play!</a></li>
+                    <li><a href="#how-to-play">How to play</a></li>
+                    <li><a href="#about-this-project">About this project</a></li>
+                </ul>
+                <!-- .nav, .navbar-search, .navbar-form, etc -->
+              </div>
+         </div>
+       </div>
+    </div>
     <div class="container">
         <div class="row">
             <div class="span12">
-                <div class="hero-unit darker-bg">
-                        <h1>Tien Len 13 </h1>
-                        <p>Tien Len 13 is a popular vietnamese card game, aka Vietnamese cards or Thirteen. The objective of the game is to eliminate all thirteen cards in your hand before your opponents do.</p>
+                <div class="hero-unit">
+                    <h1 class="walter">Tien Len 13</h1>
+                    <p class="lead">A popular Vietnamese card game</p>
+                    <p>Tien Len 13 is a popular vietnamese card game, aka Vietnamese Cards (VC) or Thirteen. The objective of the game is to eliminate all thirteen cards in your hand before your opponents do.</p>
                     <a class="btn btn-success btn-large" href="#"><i class="icon-play icon-white"></i> Play Tien Len</a>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="span12">
-                <h2>How to play</h2>
+                <h2 id="how-to-play" class="walter">How to play</h2>
                 <div class="row">
                     <div class="span6">
                         <div class="page-header">
-                            <h3 id="game-play">Card Values and Hands</h3>
+                            <h3 class="walter">Card Values and Hands</h3>
                         </div>
                         <p>The cards rank from <strong>lowest</strong> to <strong>highest</strong> as follows &rarr; 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A, 2</p>
                         <p>The suits rank from <strong>lowest</strong> to <strong>highest</strong> as follows &rarr; &spades; Spades, &clubs; Clubs, &diams; Diamonds, &hearts; Hearts</p>
-                        <p>These are valid hands:</p>
-                        <ul>
-                            <li><strong>Single Card</strong> - A single card of any kind</li>
-                            <li><strong>Two of a kind</strong> - Two cards of the same value ex. ACE&diams; + ACE&hearts;</li>
-                            <li><strong>Three of a kind</strong> - Three cards of the same value ex. JACK&spades; + JACK&diams; + JACK&hearts;</li>
-                            <li><strong>Four of a kind</strong> - Four cards of the same value ex. NINE&spades; + NINE&clubs; + NINE&diams; + NINE&hearts;. This is also known as a <strong>buster</strong>. If a player plays a single 2 card (the highest card), you can play over it with this hand.
-                            </li>
-                            <li><strong>Straight</strong> - Cards of <strong>any</strong> suit in a sequence ex. THREE&spades; + FOUR&hearts; + FIVE&spades; + SIX&diams;</li>
-                            <li><strong>Straight Lock</strong> - Cards of <strong>same</strong> suit in a sequence ex. THREE&spades; + FOUR&spades; + FIVE&spades; + SIX&spades;. A player must have a straight of the same suit to beat this hand, hence the lock.</li>
-                            <li><strong>Straight Pairs</strong> - Paired cards in a sequence ex. THREE&clubs; + THREE&spades; + FOUR&spades; + FOUR&spades; + FIVE&hearts; + FIVE&diams;. This is also known as a <strong>buster</strong>. If a player plays a single 2 card (the highest card), you can play over it with this hand.</li>
-                        </ul>
+                        <table class="table table-condensed">
+                            <tr>
+                                <th>Hand Type</th>
+                                <th>Hand</th>
+                            </tr>
+                            <tr>
+                                <td>Single</td>
+                                <td>Three&spades;</td>
+                            <tr>
+                            <tr>
+                                <td>Pair</td>
+                                <td>Ace&hearts;, Ace&diams;</td>
+                            <tr>
+                            <tr>
+                                <td>Three of a Kind</td>
+                                <td>Jack&spades;, Jack&diams;, Jack&hearts;</td>
+                            <tr>
+                            <tr>
+                                <td>Four of a kind<strong>*</strong></td>
+                                <td>Nine&spades;, Nine&clubs;, Nine&diams;, Nine&hearts;</td>
+                            <tr>
+                            <tr>
+                                <td>Straight</td>
+                                <td>Three&hearts;, Four&diams;, Five&spades;, Six&clubs;</td>
+                            <tr>
+                            <tr>
+                                <td>Straight Lock<strong>**</strong></td>
+                                <td>Three&spades;, Four&spades;, Five&spades;, Six&spades;</td>
+                            <tr>
+                            <tr>
+                                <td>Straight Pairs<strong>*</strong></td>
+                                <td>Three&clubs;, Three&spades;, Four&spades;, Four&spades;, Five&hearts;, Five&diams;</td>
+                            <tr>
+                        </table>
+                        <p><strong>*</strong>  This is also known as a <strong>buster</strong>. If a player plays a single 2 card (the highest card), you can play over it with this hand.</p>
+                        <p><strong>**</strong>  A player must have a straight of the same suit to beat this hand, hence the lock.</p>
                     </div>
                     <div class="span6">
                         <div class="page-header">
-                            <h3>Game Play</h3>
+                            <h3 class="walter">Game Play</h3>
                         </div>
                         <p>The goal of Tien Len is to be the first player to git rid of all your cards. The person with the lowest card starts the game and can play any of the hands (ex. Single, Straight) to start the game.</p>
                         <p>When a player plays a hand, the other players must play a hand of the same type. Example:</p> 
 
-                        <p><em>Player 1</em> plays <strong>THREE&spades; + THREE&hearts;</strong> (Two of a Kind) the other players must play a <strong>Two of a Kind</strong>.</p> 
-                        <p>In the end, the player that plays the hand that noone else can beat <strong>takes over</strong> the game. At this point, the player can choose to play whatever hand he desires because he is the leader.</p>
-                        <p><em>Rinse and repeat</em> and you have a game of <strong>Tien Len 13!</strong></p>
+                        <div class="well">
+                            <p><em>Player 1</em> plays <strong>THREE&spades; + THREE&hearts;</strong> (Two of a Kind) the other players must play a <strong>Two of a Kind</strong>.</p> 
+                            <p>In the end, the player that plays the hand that noone else can beat <strong>takes over</strong> the game. At this point, the player can choose to play whatever hand he desires because he is the leader.</p>
+                            <p><em>Rinse and repeat</em> and you have a game of <strong>Tien Len 13!</strong></p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="span12">
-                <div class="hero-unit">
-                    <p>&copy; 2012 Glen Zangirolami &ndash; Tien Len 13 - Want to contribute to the game? <a href="https://github.com/glenbot/Tien-Len">Fork Tien Len 13 on GitHub</a></p>
-                    <p>Technologies used: JavaScript, <a href="http://classy.pocoo.org/">Classy</a>, <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>
+                <div class="page-header">
+                    <h2 id="about-this-project" class="walter">About this project</h2>
+                </div>
+                <p>I have a passion for cards and wanted an excuse to use <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>, <a href="http://classy.pocoo.org/">Classy</a>, and HTML5</p>
+                <p>Want to contribute to the game? <a href="https://github.com/glenbot/Tien-Len">Fork Tien Len 13 on GitHub</a></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                <div class="hero-unit" style="text-align: center;">
+                    <p>&copy; 2012 Glen Zangirolami &ndash; Tien Len 13</p>
                 </div>
             </div>
         </div>
