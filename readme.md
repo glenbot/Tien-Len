@@ -3,6 +3,8 @@
 Side project. Creating an HTML 5 version of the card game Tien Len.
 It's currently in an infant state.
 
+Progress can be seen at http://tienlen13.net
+
 ### What is Tien Len?
 
 Old school card game I used to play in High School. Very underrated.
