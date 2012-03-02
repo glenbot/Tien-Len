@@ -634,6 +634,9 @@ var Player = Class.$extend({
     /* Boolean if they are finished or not */
     this.is_finished = false;
 
+    /* Boolean if player has passed */
+    this.has_passed = false;
+
     /* Place they finished */
     this.place = 0;
 
@@ -653,14 +656,18 @@ var Player = Class.$extend({
       }
       this.hand.sort();
       this.chosen_hand.reset();
+      this.has_passed = true;
   },
 
   /** 
    * Put the cards onto the table hand
    * 
-   * first_play, boolean
+   * Params allow_override Boolean Allow the player to override
+   * the table hand. Happens when all players have passed.
+   *
+   * Returns [Boolean, Message String]
    */
-  play : function() {
+  play : function(allow_override) {
     this.chosen_hand.set_hand();
 
     if (this.chosen_hand.is_valid) {
@@ -668,6 +675,16 @@ var Player = Class.$extend({
 
         // set the table hand
         this.table_hand.set_hand();
+
+        // Play the hand regardless of the hand
+        // on the table, happens when a player has control
+        // because all other players have passed
+        if (allow_override) {
+            this.table_hand.remove_all_cards();
+            this.table_hand.add_cards(this.chosen_hand.cards);
+            this.chosen_hand.remove_all_cards();
+            return [true, 'Hand is valid from override'];
+        }
 
         // validate the hand and play if possible
         if (this.chosen_hand.hand_type == this.table_hand.hand_type || num_table_cards == 0) {
@@ -751,10 +768,10 @@ var Game = Class.$extend({
     this.current_player = null;
 
     /* Status of the game */
-    this.started = false;
+    this.is_started = false;
 
     /* Game over - wah, wah */
-    this.game_over = false;
+    this.is_over = false;
 
     this.initialize(players);
   },
@@ -793,7 +810,7 @@ var Game = Class.$extend({
       var g_counter = 0;
 
       // set a default start player
-      this.players.push(this.players[0]);
+      players.push(this.players[0]);
 
       // get the real start player from card values
       for (i = 1; i < this.players.length; i++) {
@@ -850,8 +867,31 @@ var Game = Class.$extend({
   },
 
   /** 
+   * Reset all players had_passed flag
+   */
+  reset_passed_players : function() {
+    for (i = 0; i < this.players.length; i++) {
+      this.players[i].has_passed = false;
+    }
+  },
+
+  /** 
+  * Have all other players passed?
+  * Returns Boolean
+  */
+  other_players_passed : function() {
+    var passed_count = 0;
+    for (i = 0; i < this.players.length; i++) {
+      if (this.players[i].has_passed)
+        passed_count++;
+    }
+
+    return ((this.players.length - 1) == passed_count);
+  },
+
+   /** 
    * Is this the second to last player?
-   * return boolean
+   * Returns Boolean
    */
   is_second_to_last_player : function() {
     return ((this.players.length - this.player_finished_total()) == 1);
@@ -865,9 +905,10 @@ var Game = Class.$extend({
 
     for (i = 0; i < this.players.length; i++) {
       if (this.players[i].is_finished) {
-        total += 1;
+        total++;
       }
     }
+
     return total;
   },
  
@@ -875,10 +916,11 @@ var Game = Class.$extend({
    * Set a player to finished
    */
   player_finish : function(player) {
+    var place = this.player_finished_total();
     for (i = 0; i < this.players.length; i++) {
       if (this.players[i].name == player.name) {
+        this.players[i].place = place + 1;
         this.players[i].is_finished = true;
-        this.players[i].place = this.player_finished_total() + 1;
       }
     } 
   },
@@ -891,30 +933,40 @@ var Game = Class.$extend({
    * [boolean, msg]
    */
   player_play : function() {
-    // TODO: Check if the player has control
-    // TODO: Test if all have passed 
-
-    if (this.game_over)
+    if (this.is_over)
       return [false, 'Game is over.']
-    if (!this.started)
+    if (!this.is_started)
       return [false, 'Game has not started yet.'];
 
-    var result = this.current_player.play();
+    // Set a default, if we see this, something bad
+    // has happened in the logic
+    var result = [false, 'Bad logic'];
+
+    if (this.other_players_passed()) {
+        // play with an overrid allowed.
+        result = this.current_player.play(true);
+        if (result[0] == true)
+          this.reset_passed_players();
+    } else {
+        result = this.current_player.play(false);
+    }
 
     // hand is valid and better
     if (result[0] == true) {
       // player is out of cards
       if (this.current_player.hand.cards.length == 0) {
-        if (this.is_second_to_last_player()) {
-          // set player to finished and set place
-          this.player_finish(this.current_player);
+        // set player to finished and set place
+        this.player_finish(this.current_player);
 
+        if (this.is_second_to_last_player()) {
           // end the game
-          this.game_over = true;
-          this.started = false;
-        } else {
-          // set player to finished and set place
+          this.is_over = true;
+          this.is_started = false;
+
+          // eliminate the last player
+          this.set_next_player();
           this.player_finish(this.current_player);
+        } else {
           this.set_next_player();
         }
       } else {  // player still has cards
@@ -928,11 +980,10 @@ var Game = Class.$extend({
    * Gives the play to the next player
    */
   player_pass : function() {
-      var result = [true, 'passed']
-
+      this.current_player.pass();
       this.set_next_player();
 
-      return result;
+      return [true, 'passed'];
   },
 
   /** 
@@ -940,7 +991,7 @@ var Game = Class.$extend({
    * flag to true
    */
   start : function() {
-    this.started = true;
+    this.is_started = true;
   },
 
   /** 
@@ -948,6 +999,6 @@ var Game = Class.$extend({
    * flag to false
    */
   quit : function() {
-    this.started = false;
+    this.is_started = false;
   }
 });
