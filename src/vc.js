@@ -628,7 +628,14 @@ var Player = Class.$extend({
     /* A list of cards the player has */
     this.hand = hand;
 
+    /* The byref table hand */
     this.table_hand = table_hand;
+
+    /* Boolean if they are finished or not */
+    this.is_finished = false;
+
+    /* Place they finished */
+    this.place = 0;
 
     /* Cards the player has chosen to play */
     this.chosen_hand = ChosenHand();
@@ -708,7 +715,7 @@ var Player = Class.$extend({
       this.hand.add_card(chosen_card);
       this.hand.sort();
     }
-  }
+  },
 });
 
 
@@ -740,20 +747,14 @@ var Game = Class.$extend({
     /* Table Hand */
     this.table_hand = TableHand([]);
 
-    /* Player who won the game */
-    this.winner = null;
-
-    /* Player who is currently winning */
-    this.current_winner = null;
-
     /* Players who's turn it is */
     this.current_player = null;
 
-    /* Index of next player in list */
-    this.next_player = 0;
-
     /* Status of the game */
     this.started = false;
+
+    /* Game over - wah, wah */
+    this.game_over = false;
 
     this.initialize(players);
   },
@@ -788,21 +789,30 @@ var Game = Class.$extend({
    * sets that player as the current_player
    */
   set_start_player : function() {
-      var prev_low_card = 0
+      var players = [];
+      var g_counter = 0;
 
       // set a default start player
-      this.current_player = this.players[0];
+      this.players.push(this.players[0]);
 
       // get the real start player from card values
-      for (i = 0; i < this.players.length; i++) {
-        if (prev_low_card != 0) {
-          if (this.players[i].hand.lowest_card().value < prev_low_card)
-            this.current_player = this.players[i];
-          }
-          prev_low_card = this.players[i].hand.lowest_card().value;
+      for (i = 1; i < this.players.length; i++) {
+        var i_card_value = this.players[i].hand.lowest_card().value;
+
+        for (j = 0; j < players.length; j++) {
+          var j_card_value = players[j].hand.lowest_card().value;
+          if (i_card_value < j_card_value)
+            g_counter++;
+        }
+
+        if (g_counter == players.length) {
+          players.splice(0,0, this.players[i]);
+        } else {
+          players.push(this.players[i]);
+        }
       }
 
-      this.set_next_player();
+      this.current_player = players[0];
   },
 
   /** 
@@ -810,18 +820,67 @@ var Game = Class.$extend({
    * sets who needs to go next
    */
   set_next_player : function() {
-    var current_player_name = this.current_player.name;
-
     for (i = 0; i < this.players.length; i++) {
-      if (this.players[i].name == current_player_name) {
-        if (i == this.players.length - 1) {
-          this.next_player = 0;
+      if (this.players[i].name == this.current_player.name) {
+        var next_index = (i + 1);
+
+        // set index to zero if we are on the last player
+        if (i == this.players.length - 1)
+            next_index = 0
+
+        if (this.players[next_index].is_finished) {
+          continue; // go to next player if finished
         } else {
-          this.next_player = i + 1;
+          this.current_player = this.players[next_index];
+          break;
         }
-        break;
       }
     }
+  },
+
+  /** 
+   * Remove a player from the players list
+   */
+  remove_player : function(player) {
+    for (i = 0; i < this.players.length; i++) {
+      if (this.players[i].name == player.name) {
+        this.players.splice(i, 1);
+      }
+    }
+  },
+
+  /** 
+   * Is this the second to last player?
+   * return boolean
+   */
+  is_second_to_last_player : function() {
+    return ((this.players.length - this.player_finished_total()) == 1);
+  },
+
+  /** 
+   * Calulate the current place total
+   */
+  player_finished_total : function() {
+    var total = 0;
+
+    for (i = 0; i < this.players.length; i++) {
+      if (this.players[i].is_finished) {
+        total += 1;
+      }
+    }
+    return total;
+  },
+ 
+   /** 
+   * Set a player to finished
+   */
+  player_finish : function(player) {
+    for (i = 0; i < this.players.length; i++) {
+      if (this.players[i].name == player.name) {
+        this.players[i].is_finished = true;
+        this.players[i].place = this.player_finished_total() + 1;
+      }
+    } 
   },
 
   /** 
@@ -832,19 +891,37 @@ var Game = Class.$extend({
    * [boolean, msg]
    */
   player_play : function() {
-      if (!this.started)
-         return [false, 'Game has not started yet.'];
-    
-      var result = this.current_player.play();
+    // TODO: Check if the player has control
+    // TODO: Test if all have passed 
 
-      if (result[0] == true) {
-          this.current_player = this.players[this.next_player];
+    if (this.game_over)
+      return [false, 'Game is over.']
+    if (!this.started)
+      return [false, 'Game has not started yet.'];
+
+    var result = this.current_player.play();
+
+    // hand is valid and better
+    if (result[0] == true) {
+      // player is out of cards
+      if (this.current_player.hand.cards.length == 0) {
+        if (this.is_second_to_last_player()) {
+          // set player to finished and set place
+          this.player_finish(this.current_player);
+
+          // end the game
+          this.game_over = true;
+          this.started = false;
+        } else {
+          // set player to finished and set place
+          this.player_finish(this.current_player);
           this.set_next_player();
-          return result;
-      } else {
-         // return [false, message]
-         return [result[0], result[1]];
+        }
+      } else {  // player still has cards
+        this.set_next_player();
       }
+    } 
+    return result;
   },
 
   /** 
@@ -853,7 +930,6 @@ var Game = Class.$extend({
   player_pass : function() {
       var result = [true, 'passed']
 
-      this.current_player = this.players[this.next_player];
       this.set_next_player();
 
       return result;
