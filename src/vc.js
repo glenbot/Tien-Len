@@ -651,8 +651,8 @@ var Player = Class.$extend({
    */
   pass : function() {
       // put the cards back in the hand
-      for (i = 0; i < this.chosen_hand.length; i++) {
-          this.hand.add_card(this.chosen_hand[i]);
+      for (i = 0; i < this.chosen_hand.cards.length; i++) {
+          this.hand.add_card(this.chosen_hand.cards[i]);
       }
       this.hand.sort();
       this.chosen_hand.reset();
